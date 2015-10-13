@@ -1,0 +1,5 @@
+14 Mar 2015 | Version 0.99.4: Minor changes to man pages of classes.
+14 Mar 2015 | Version 0.99.3: Tidy up using formatR package.
+13 Mar 2015 | Version 0.99.2: Fix various BiocCheck issues, e.g. changing man files.
+13 Mar 2015 | Version 0.99.1: Add read.450k.url method to read IDAT files from the web. Update vignette. Bugfix date in CNV objects.
+12 Mar 2015 | Version 0.99.0: Initial submission to Bioconductor.
