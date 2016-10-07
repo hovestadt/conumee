@@ -22,6 +22,7 @@
 #' @param ylim numeric vector. The y limits of the plot. Defaults to \code{c(-1.25, 1.25)}.
 #' @param set_par logical. Use recommended graphical parameters for \code{oma} and \code{mar}? Defaults to \code{TRUE}. Original parameters are restored afterwards.
 #' @param cols character vector. Colors to use for plotting intensity levels of bins. Centered around 0. Defaults to \code{c('red', 'red', 'lightgrey', 'green', 'green')}.
+#' @param ... Additional parameters (\code{CNV.detailplot} generic, currently not used).
 #' @return \code{NULL}.
 #' @details This method provides the functionality for generating CNV plots for the whole genome or defined chromosomes. Bins are shown as dots, segments are shown as lines. See parameters for more information.
 #' @examples
@@ -127,13 +128,16 @@ setMethod("CNV.genomeplot", signature(object = "CNV.analysis"), function(object,
         detail.ratio.above <- (detail.ratio > 0 & detail.ratio < 0.85) | 
             detail.ratio < -0.85
         
-        lines(start(object@anno@detail) + chr.cumsum0[as.vector(seqnames(object@anno@detail))], 
-            detail.ratio, type = "p", col = "darkblue", lwd = 2)
-        text(start(object@anno@detail) + chr.cumsum0[as.vector(seqnames(object@anno@detail))], 
+        lines(start(object@anno@detail) + (end(object@anno@detail) - start(object@anno@detail)) /2
+              + chr.cumsum0[as.vector(seqnames(object@anno@detail))], 
+            detail.ratio, type = "p", pch = 16, col = "darkblue")
+        text(start(object@anno@detail) + (end(object@anno@detail) - start(object@anno@detail)) /2
+             + chr.cumsum0[as.vector(seqnames(object@anno@detail))], 
             ifelse(detail.ratio.above, detail.ratio, NA), labels = paste("  ", 
                 values(object@anno@detail)$name, sep = ""), adj = c(0, 
                 0.5), srt = 90, col = "darkblue")
-        text(start(object@anno@detail) + chr.cumsum0[as.vector(seqnames(object@anno@detail))], 
+        text(start(object@anno@detail) + (end(object@anno@detail) - start(object@anno@detail)) /2
+             + chr.cumsum0[as.vector(seqnames(object@anno@detail))], 
             ifelse(detail.ratio.above, NA, detail.ratio), labels = paste(values(object@anno@detail)$name, 
                 "  ", sep = ""), adj = c(1, 0.5), srt = 90, col = "darkblue")
     }
@@ -141,17 +145,6 @@ setMethod("CNV.genomeplot", signature(object = "CNV.analysis"), function(object,
     if (set_par) 
         par(mfrow = mfrow_original, mar = mar_original, oma = oma_original)
 })
-
-#' @rdname CNV.genomeplot
-#' @param x \code{CNV.analysis} object (defined by \code{plot} generic).
-#' @param y NULL (defined by \code{plot} generic).
-#' @param ... Additional parameters supplied to \code{CNV.genomeplot}.
-#' @export 
-setMethod("plot", signature(x = "CNV.analysis"), function(x, y = NULL, 
-    ...) {
-    CNV.genomeplot(object = x, ...)
-})
-
 
 #' CNV.detailplot
 #' @description Create CNV plot for detail region.
