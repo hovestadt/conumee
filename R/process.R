@@ -72,14 +72,14 @@ setMethod("CNV.fit", signature(query = "CNV.data", ref = "CNV.data", anno = "CNV
         }
         object@anno <- anno
         
-        if (max(cor(query@intensity[p, ], ref@intensity[p, ])[1, ]) > 0.99) 
-            stop("query sample seems to also be in the reference set. cannot fit against itself.")
+        r <- cor(query@intensity[p, ], ref@intensity[p, ])[1, ] < 0.99
+        if (any(!r)) message("query sample seems to also be in the reference set. not used for fit.")
         if (intercept) {
             ref.fit <- lm(y ~ ., data = data.frame(y = query@intensity[p, 
-                1], X = ref@intensity[p, ]))
+                1], X = ref@intensity[p, r]))
         } else {
             ref.fit <- lm(y ~ . - 1, data = data.frame(y = query@intensity[p, 
-                1], X = ref@intensity[p, ]))
+                1], X = ref@intensity[p, r]))
         }
         object@fit$coef <- ref.fit$coefficients
         

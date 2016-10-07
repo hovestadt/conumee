@@ -3,6 +3,8 @@
 #' @import minfi
 #' @import IlluminaHumanMethylation450kmanifest
 #' @import IlluminaHumanMethylation450kanno.ilmn12.hg19
+#' @import IlluminaHumanMethylationEPICmanifest
+#' @import IlluminaHumanMethylationEPICanno.ilm10b2.hg19
 #' @import GenomicRanges
 #' @import IRanges
 #' @import GenomeInfoDb
@@ -14,11 +16,12 @@ NULL
 #' @param bin_minprobes numeric. Minimum number of probes per bin. Bins are interatively merged with neighboring bin until minimum number is reached.
 #' @param bin_minsize numeric. Minimum size of a bin.
 #' @param bin_maxsize numeric. Maximum size of a bin. Merged bins that are larger are filtered out.
+#' @param array_type character. One of \code{450k}, \code{EPIC}, or \code{overlap}. Defaults to \code{450k}.
 #' @param chrXY logical. Should chromosome X and Y be included in the analysis?
 #' @param exclude_regions GRanges object or path to bed file containing genomic regions to be excluded.
 #' @param detail_regions GRanges object or path to bed file containing genomic regions to be examined in detail.
 #' @return \code{CNV.anno} object.
-#' @details This function collects all annotations required for CNV analysis using 450k arrays. The output \code{CNV.anno} object is not editable. Rerun \code{CNV.create_anno} to change parameters.
+#' @details This function collects all annotations required for CNV analysis using Illumina 450k or EPIC arrays. The output \code{CNV.anno} object is not editable. Rerun \code{CNV.create_anno} to change parameters.
 #' @examples
 #' # create annotation object
 #' anno <- CNV.create_anno()
@@ -26,7 +29,7 @@ NULL
 #' @author Volker Hovestadt \email{conumee@@hovestadt.bio}
 #' @export
 CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 50000, bin_maxsize = 5e+06, 
-    chrXY = FALSE, exclude_regions = NULL, detail_regions = NULL) {
+    array_type = "450k", chrXY = FALSE, exclude_regions = NULL, detail_regions = NULL) {
     object <- new("CNV.anno")
     object@date <- date()
     
@@ -35,6 +38,13 @@ CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 50000, bin_maxsize
     object@args <- as.list(sapply(unique(names(c(a1, a2))), function(an) if (is.element(an, 
         names(a2))) 
         a2[[an]] else a1[[an]], simplify = FALSE))
+    
+    if (is.null(array_type)) {
+      array_type <- "450k"
+    }
+    if (!is.element(array_type, c("450k", "EPIC", "overlap"))) {
+      stop("array_type must be on of 450k, EPIC, or overlap")
+    }
     
     if (chrXY) {
         object@genome <- data.frame(chr = paste("chr", c(1:22, "X", "Y"), 
@@ -65,8 +75,21 @@ CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 50000, bin_maxsize
     object@genome$pq <- start(resize(subsetByOverlaps(object@gap, GRanges(names(pq), 
         IRanges(pq, pq))), 1, fix = "center"))
     
-    message("getting 450k annotations")
-    probes <- minfi::getLocations(IlluminaHumanMethylation450kanno.ilmn12.hg19::IlluminaHumanMethylation450kanno.ilmn12.hg19)
+    probes450k <- probesEPIC <- GRanges()
+    if (is.element(array_type, c("450k", "overlap"))) {
+      message("getting 450k annotations")
+      probes450k <- sort(minfi::getLocations(IlluminaHumanMethylation450kanno.ilmn12.hg19::IlluminaHumanMethylation450kanno.ilmn12.hg19))
+    }
+    if (is.element(array_type, c("EPIC", "overlap"))) {
+      message("getting EPIC annotations")
+      probesEPIC <- sort(minfi::getLocations(IlluminaHumanMethylationEPICanno.ilm10b2.hg19::IlluminaHumanMethylationEPICanno.ilm10b2.hg19))
+    }
+    if (array_type == "overlap") {
+      probes <- sort(subsetByOverlaps(probes450k, probesEPIC))
+    } else {
+      probes <- unique(sort(c(probes450k, probesEPIC)))
+    }
+    
     # CpG probes only
     probes <- probes[substr(names(probes), 1, 2) == "cg" & is.element(as.vector(seqnames(probes)), 
         object@genome$chr)]
@@ -75,53 +98,53 @@ CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 50000, bin_maxsize
     message(" - ", length(object@probes), " probes used")
     
     if (!is.null(exclude_regions)) {
-        message("importing regions to exclude from analysis")
-        if (class(exclude_regions) == "GRanges") {
-            object@exclude <- GRanges(as.vector(seqnames(exclude_regions)), 
-                ranges(exclude_regions), seqinfo = Seqinfo(object@genome$chr, 
-                  object@genome$size))
-            values(object@exclude) <- values(exclude_regions)
-            object@exclude <- sort(object@exclude)
-        } else {
-            object@exclude <- sort(rtracklayer::import(exclude_regions, 
-                seqinfo = Seqinfo(object@genome$chr, object@genome$size)))
-        }
+      message("importing regions to exclude from analysis")
+      if (class(exclude_regions) == "GRanges") {
+        object@exclude <- GRanges(as.vector(seqnames(exclude_regions)), 
+                                  ranges(exclude_regions), seqinfo = Seqinfo(object@genome$chr, 
+                                                                             object@genome$size))
+        values(object@exclude) <- values(exclude_regions)
+        object@exclude <- sort(object@exclude)
+      } else {
+        object@exclude <- sort(rtracklayer::import(exclude_regions, 
+                                                   seqinfo = Seqinfo(object@genome$chr, object@genome$size)))
+      }
     } else {
-        object@exclude <- GRanges(seqinfo = Seqinfo(object@genome$chr, 
-            object@genome$size))
+      object@exclude <- GRanges(seqinfo = Seqinfo(object@genome$chr, 
+                                                  object@genome$size))
     }
     
     if (!is.null(detail_regions)) {
-        message("importing regions for detailed analysis")
-        if (class(detail_regions) == "GRanges") {
-            object@detail <- GRanges(as.vector(seqnames(detail_regions)), 
-                ranges(detail_regions), seqinfo = Seqinfo(object@genome$chr, 
-                  object@genome$size))
-            if (any(grepl("name", names(values(detail_regions))))) {
-                values(object@detail)$name <- values(detail_regions)[[grep("name", 
-                  names(values(detail_regions)))[1]]]
-            }
-            if (any(grepl("IRanges", sapply(values(detail_regions), class)))) {
-                values(object@detail)$thick <- values(detail_regions)[[grep("IRanges", 
-                  sapply(values(detail_regions), class))[1]]]
-            }
-            object@detail <- sort(object@detail)
-        } else {
-            object@detail <- sort(rtracklayer::import(detail_regions, seqinfo = Seqinfo(object@genome$chr, 
-                object@genome$size)))
+      message("importing regions for detailed analysis")
+      if (class(detail_regions) == "GRanges") {
+        object@detail <- GRanges(as.vector(seqnames(detail_regions)), 
+                                 ranges(detail_regions), seqinfo = Seqinfo(object@genome$chr, 
+                                                                           object@genome$size))
+        if (any(grepl("name", names(values(detail_regions))))) {
+          values(object@detail)$name <- values(detail_regions)[[grep("name", 
+                                                                     names(values(detail_regions)))[1]]]
         }
-        if (!is.element("name", names(values(object@detail)))) {
-            stop("detailed region bed file must contain name column.")
+        if (any(grepl("IRanges", sapply(values(detail_regions), class)))) {
+          values(object@detail)$thick <- values(detail_regions)[[grep("IRanges", 
+                                                                      sapply(values(detail_regions), class))[1]]]
         }
-        if (!all(table(values(object@detail)$name) == 1)) {
-            stop("detailed region names must be unique.")
-        }
+        object@detail <- sort(object@detail)
+      } else {
+        object@detail <- sort(rtracklayer::import(detail_regions, seqinfo = Seqinfo(object@genome$chr, 
+                                                                                    object@genome$size)))
+      }
+      if (!is.element("name", names(values(object@detail)))) {
+        stop("detailed region bed file must contain name column.")
+      }
+      if (!all(table(values(object@detail)$name) == 1)) {
+        stop("detailed region names must be unique.")
+      }
     } else {
-        object@detail <- GRanges(seqinfo = Seqinfo(object@genome$chr, object@genome$size))
+      object@detail <- GRanges(seqinfo = Seqinfo(object@genome$chr, object@genome$size))
     }
     if (!is.element("thick", names(values(object@detail)))) {
-        values(object@detail)$thick <- resize(ranges(object@detail), fix = "center", 
-            1e+06)
+      values(object@detail)$thick <- resize(ranges(object@detail), fix = "center", 
+                                            1e+06)
     }
     
     message("creating bins")
