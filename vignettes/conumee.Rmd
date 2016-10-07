@@ -16,20 +16,21 @@ vignette: >
 
 # Introduction
 
-The `conumee` package provides tools for performing **co**py-**nu**mber variation (CNV) analysis using Illumina 450k **me**thylation arrays. Although the primary purpose of 450k arrays is the detection of genome-wide DNA methylation levels [@bibikovahigh2011], it can additionally be used to extract useful information about copy-number alterations, e.g. in clinical cancer samples. The approach was initially described in Sturm et al., 2012 [@sturmhotspot2012]. Other tools following a similar strategy include `ChAMP` and `CopyNumber450k` [@feberusing2014; @papilloncopynumber2013].
+The `conumee` package provides tools for performing **co**py-**nu**mber variation (CNV) analysis using Illumina 450k or EPIC DNA **me**thylation arrays. Although the primary purpose of these arrays is the detection of genome-wide DNA methylation levels [@bibikovahigh2011], it can additionally be used to extract useful information about copy-number alterations, e.g. in clinical cancer samples. The approach was initially described in Sturm et al., 2012 [@sturmhotspot2012]. Other tools following a similar strategy include `ChAMP` and `CopyNumber450k` [@feberusing2014; @papilloncopynumber2013].
 
 CNV analysis is performed using a two-step approach. First, the combined intensity values of both 'methylated' and 'unmethylated' channel of each CpG are normalized using a set of normal controls (i.e. with a flat genome not showing any copy-number alterations). This step is required for correcting for probe and sample bias (e.g. caused by GC-content, type I/II differences or technical variability). Secondly, neighboring probes are combined in a hybrid approach, resulting in bins of a minimum size and a minimum number of probes. This step is required to reduce remaining technical variability and enable meaningful segmentation results.
 
-The `conumee` package has been written for seamless integration with frequently-used Bioconductor packages. It is recommended that 450k data is loaded using the `minfi` package [@aryeeminfi2014]. Segmentation is performed using the circular binary segmentation (CBS) algorithm implemented in the `DNAcopy` package [@olshencircular2004]. Processing time is typically less than a minute per sample.
+The `conumee` package has been written for seamless integration with frequently-used Bioconductor packages. It is recommended that methylation array data is loaded using the `minfi` package [@aryeeminfi2014]. Segmentation is performed using the circular binary segmentation (CBS) algorithm implemented in the `DNAcopy` package [@olshencircular2004]. Processing time is typically less than a minute per sample.
 
 Finally, the `conumee` package also provides a set of plotting methods to create publication-grade CNV plots of the whole genome, selected chromosomes or previously defined regions of interest. Writing of text-based output files for visualization in other tools (e.g. the IGV browser) or downstream processing (e.g. using GISTIC) is also supported. 
 
 
 # Load data
 
-The recommended input format are `Mset` objects generated from raw IDAT files using the `minfi` package. Depending on the analysis workflow, these objects might be already available. A good example data-set for testing the `conumee` package can be downloaded from TCGA (971.6 MB):
+The recommended input format are `Mset` objects generated from raw IDAT files using the `minfi` package. Depending on the analysis workflow, these objects might be already available. A good example 450k data-set for testing the `conumee` package can be downloaded from TCGA (971.6 MB):
 
-https://tcga-data.nci.nih.gov/tcgafiles/ftp_auth/distro_ftpusers/anonymous/tumor/brca/cgcc/jhu-usc.edu/humanmethylation450/methylation/jhu-usc.edu_BRCA.HumanMethylation450.Level_1.8.8.0.tar.gz
+~~https://tcga-data.nci.nih.gov/tcgafiles/ftp_auth/distro_ftpusers/anonymous/tumor/brca/cgcc/jhu-usc.edu/humanmethylation450/methylation/jhu-usc.edu_BRCA.HumanMethylation450.Level_1.8.8.0.tar.gz~~
+UPDATE: The TCGA Data Portal is no longer operational. TCGA DNA methylation data can now be downloaded from the NCI GDC Legacy Archive: https://gdc-portal.nci.nih.gov/legacy-archive
 
 This data-set comprises of 42 primary breast cancer samples, 2 breast cancer cell lines and 16 control samples. Make sure to unpack the archive. For the purpose of this vignette, only two illustrative examples are downloaded using the `read.450k.url` method.
 
@@ -77,7 +78,7 @@ data(exclude_regions)
 data(detail_regions)
 head(detail_regions, n = 2)
 
-anno <- CNV.create_anno(exclude_regions = exclude_regions, detail_regions = detail_regions)
+anno <- CNV.create_anno(array_type = "450k", exclude_regions = exclude_regions, detail_regions = detail_regions)
 
 anno
 ```
@@ -106,7 +107,7 @@ controls.data <- CNV.load(MsetControls)
 
 The main CNV analysis is separated into four parts:
 
-* First, `CNV.fit` is used to normalize a single query sample to a set of control samples by multiple linear regression. For best results control samples of matched normal tissues that are profiled within the same experiment are used (which are likely to have the same technical bias). Essentially this regression analysis yields the linear combination of controls samples that most closely fits the intensities of the query sample. Subsequently, the log2-ratio of probe intensities of the query sample versus the combination of control samples are calculated and used for further analysis. More details are given in the publication.
+* First, `CNV.fit` is used to normalize a single query sample to a set of control samples by multiple linear regression. For best results control samples of matched normal tissues that are profiled within the same experiment are used (which are likely to have the same technical bias). Essentially this regression analysis yields the linear combination of control samples that most closely fits the intensities of the query sample. Subsequently, the log2-ratio of probe intensities of the query sample versus the combination of control samples are calculated and used for further analysis. More details are given in the publication.
 * Secondly, `CNV.bin` is used to combine probes within predefined genomic bins. Bins are previously generated using `CNV.create_anno`. Intensity values are shifted to minimize the median absolute deviation from all bins to zero to determine the copy-number neutral state.  
 * Thirdly, `CNV.detail` is used to analyze detail regions in detail. This step is optional, but required if detail regions should be outputted in plots and text files. Detail regions are defined using `CNV.create_anno`.
 * Finally, `CNV.segment` is used to segment the genome into regions of the same copy-number state. This function is a wrapper of the `CNA`, `segment`, `segments.summary` and `segments.p` functions of the `DNAcopy` package. Default parameters were optimized for 450k data, but can be changed. See `?CNV.segment` for more details.

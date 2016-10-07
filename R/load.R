@@ -141,7 +141,7 @@ setMethod("CNV.check", signature(object = "CNV.data"), function(object) {
 #' @export
 read.450k.url <- function(url = NULL, idat = NULL) {
     if (is.null(url)) 
-        url <- "https://tcga-data.nci.nih.gov/tcgafiles/ftp_auth/distro_ftpusers/anonymous/tumor/brca/cgcc/jhu-usc.edu/humanmethylation450/methylation/jhu-usc.edu_BRCA.HumanMethylation450.Level_1.8.8.0/"
+        url <- "https://github.com/hovestadt/conumeeData/raw/master/"
     if (is.null(idat)) 
         idat <- c("6042324037_R05C02", "6042324037_R06C01")
     tmp <- paste0(tempdir(), .Platform$file.sep)
@@ -150,7 +150,7 @@ read.450k.url <- function(url = NULL, idat = NULL) {
     if (!any(grepl("_Grn.idat", idat))) 
         idat <- unlist(lapply(idat, paste0, c("_Grn.idat", "_Red.idat")))
     for (i in idat) .curl(url = paste0(url, i), file = paste0(tmp, i))
-    idatRG <- read.450k.exp(base = tmp)
+    idatRG <- read.metharray.exp(base = tmp)
     for (i in idat) file.remove(paste0(tmp, i))
     return(idatRG)
 }
@@ -167,10 +167,11 @@ read.450k.url <- function(url = NULL, idat = NULL) {
         message("downloading ", tail(strsplit(url, "/")[[1]], 1), appendLF = FALSE)
     f <- RCurl::CFILE(file, mode = "wb")
     if (.Platform$OS.type == "unix") {
-        r <- RCurl::curlPerform(url = url, writedata = f@ref, noprogress = TRUE)
+        r <- RCurl::curlPerform(url = url, writedata = f@ref, noprogress = TRUE,
+                                .opts = list(followlocation = TRUE))
     } else {
         r <- RCurl::curlPerform(url = url, writedata = f@ref, noprogress = TRUE, 
-            .opts = list(ssl.verifypeer = FALSE))
+                                .opts = list(followlocation = TRUE, ssl.verifypeer = FALSE))
     }
     RCurl::close(f)
     if (verbose) 
