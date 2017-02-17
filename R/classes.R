@@ -39,9 +39,7 @@ setMethod("show", "CNV.anno", function(object) {
         "/", suppressWarnings(round(mean(values(object@bins)$probes), 1)), 
         "/", max(values(object@bins)$probes), ")\n", sep = "")
     if (object@args$chrXY == TRUE) { 
-        cat("")
-        cat("Warning: you set chrXY to TRUE. Be mindful of your controls!")
-        cat("")
+        message("Warning: you set chrXY to TRUE. Be mindful of your controls!")
     }
 })
 
@@ -189,9 +187,7 @@ setMethod("show", "CNV.analysis", function(object) {
             sep = "")
     }
     if (object@anno@args$chrXY == TRUE) { 
-        cat("")
-        cat("Warning: you set chrXY to TRUE. Be mindful of your controls!")
-        cat("")
+        message("Warning: you set chrXY to TRUE. Be mindful of your controls!")
     }
 })
 
