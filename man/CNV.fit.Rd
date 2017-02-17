@@ -63,4 +63,3 @@ names(x) <- 'Sample 1'
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-

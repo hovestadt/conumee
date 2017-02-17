@@ -12,4 +12,3 @@ Imported using \code{rtracklayer::browserSession('UCSC')}: \code{chromInfo}, \co
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-

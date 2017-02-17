@@ -49,4 +49,3 @@ CNV.write(x, what = 'detail')
 CNV.write(x, what = 'bins')
 CNV.write(x, what = 'probes')
 }
-

@@ -3,6 +3,7 @@
 \docType{methods}
 \name{CNV.load}
 \alias{CNV.load}
+\alias{CNV.load,GenomicRatioSet-method}
 \alias{CNV.load,MethylSet-method}
 \alias{CNV.load,data.frame-method}
 \alias{CNV.load,matrix-method}
@@ -10,6 +11,8 @@
 \title{CNV.load}
 \usage{
 CNV.load(input, ...)
+
+\S4method{CNV.load}{GenomicRatioSet}(input, names = NULL)
 
 \S4method{CNV.load}{MethylSet}(input, names = NULL)
 
@@ -44,4 +47,3 @@ d
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-

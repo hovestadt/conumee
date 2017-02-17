@@ -5,7 +5,7 @@
 \title{CNV.create_anno}
 \usage{
 CNV.create_anno(bin_minprobes = 15, bin_minsize = 50000,
-  bin_maxsize = 5e+06, array_type = "450k", chrXY = FALSE,
+  bin_maxsize = 5000000, array_type = "450k", chrXY = FALSE,
   exclude_regions = NULL, detail_regions = NULL)
 }
 \arguments{
@@ -40,4 +40,3 @@ anno
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-

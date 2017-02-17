@@ -25,4 +25,3 @@ This method checks if intensities are positive and not NA. If not, they are set 
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-

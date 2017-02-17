@@ -38,6 +38,11 @@ setMethod("show", "CNV.anno", function(object) {
             1)), "/", object@args$bin_maxsize/1000, "kb, probes: ", object@args$bin_minprobes, 
         "/", suppressWarnings(round(mean(values(object@bins)$probes), 1)), 
         "/", max(values(object@bins)$probes), ")\n", sep = "")
+    if (object@args$chrXY == TRUE) { 
+        cat("")
+        cat("Warning: you set chrXY to TRUE. Be mindful of your controls!")
+        cat("")
+    }
 })
 
 
@@ -85,6 +90,10 @@ setMethod("show", "CNV.data", function(object) {
 #' @export
 setMethod("[", signature(x = "CNV.data"), function(x, i) {
     x@intensity <- x@intensity[, i, drop = FALSE]
+    if (!is.null(attr(x@intensity, "predictedSex"))) {
+        attr(x@intensity, "predictedSex") <- 
+            attr(x@intensity, "predictedSex")[i]
+    }
     return(x)
 })
 
@@ -178,6 +187,11 @@ setMethod("show", "CNV.analysis", function(object) {
     } else {
         cat("  @seg       : available (", nrow(object@seg$summary), " segments)\n", 
             sep = "")
+    }
+    if (object@anno@args$chrXY == TRUE) { 
+        cat("")
+        cat("Warning: you set chrXY to TRUE. Be mindful of your controls!")
+        cat("")
     }
 })
 

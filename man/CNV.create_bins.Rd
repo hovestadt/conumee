@@ -21,4 +21,3 @@ CNV.create_bins(hg19.anno, bin_minsize = 50000, hg19.gap, hg19.exclude)
 \description{
 Split genome into bins of defined size.
 }
-

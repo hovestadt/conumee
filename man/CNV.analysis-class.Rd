@@ -3,10 +3,10 @@
 \docType{class}
 \name{CNV.analysis-class}
 \alias{CNV.analysis-class}
-\alias{coef,CNV.analysis-method}
+\alias{show,CNV.analysis-method}
 \alias{names,CNV.analysis-method}
 \alias{names<-,CNV.analysis-method}
-\alias{show,CNV.analysis-method}
+\alias{coef,CNV.analysis-method}
 \title{CNV.analysis class}
 \usage{
 \S4method{show}{CNV.analysis}(object)
@@ -69,4 +69,3 @@ CNV.write(x, what = 'segments')
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-
