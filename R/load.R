@@ -40,9 +40,10 @@ setMethod("CNV.load", signature(input = "GenomicRatioSet"), function(input, name
     } 
 
     if (!"predictedSex" %in% names(minfi::pData(input))) {
-        minfi::pData(input)$predictedSex <- minfi::getSex(input)$predictedSex
+        predictedSex <- minfi::getSex(input)$predictedSex
+    } else { 
+        predictedSex <- minfi::pData(input)$predictedSex
     }
-    predictedSex <- minfi::pData(input)$predictedSex
     names(predictedSex) <- colnames(input)
     attr(object@intensity, "predictedSex") <- predictedSex
     object <- CNV.check(object)
