@@ -36,7 +36,11 @@ CNV.import <- function(seg, genome="hg19", name="ID", score="seg.median") {
   firstTwo <- c("score", "name")
   lastTwo <- c("num.mark", "pval")
   segs <- segs[, c(firstTwo, setdiff(names(segs),c(firstTwo,lastTwo)), lastTwo)]
-  gr <- sort(makeGRangesFromDataFrame(segs, keep=TRUE))
-  names(gr) <- gr$name
-  return(gr)
+  if (nrow(segs) > 0) {
+    gr <- sort(makeGRangesFromDataFrame(segs, keep=TRUE))
+    names(gr) <- gr$name
+    return(gr)
+  } else { 
+    return(GRanges())
+  }
 }
