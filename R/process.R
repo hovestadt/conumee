@@ -299,7 +299,9 @@ setMethod("CNV.segment", signature(object = "CNV.analysis"), function(object,
 #'
 #' @return \code{CNV.analysis} object.
 #'
-#' @details This method wraps most of conumee, and tries to call sex chromosomes properly using chrX/chrY information derived from the source GenomicRatioSet. 
+#' @details This method wraps most of conumee, and tries to call sex
+#' chromosomes properly using chrX/chrY information derived from the
+#' source GenomicRatioSet.  For female subjects, chrY is dropped.
 #' @author Tim Triche, Jr. \email{tim.triche@@gmail.com}
 #' @export
 setGeneric("CNV.process", function(case, controls, CNdata, anno) {
@@ -316,15 +318,29 @@ setMethod("CNV.process",
     if (anno@args$chrXY != FALSE) {
       sex <- attr(CNdata@intensity, "predictedSex")[names(CNdata)]
       if (is.null(sex)) {
-        stop("Sex chromosome copy number requested, but no sex is annotated!")
+        stop("Error: attr(CNdata@intensity,'predictedSex') is NULL (chrXY=T).")
       } else {
-        message("Sex chromosome copy number requested; using same-sex controls")
+        message("Sex chromosome copy number requested. Using same-sex controls")
+        message("Case: ", names(CNdata)[case], "=", sex[case])
+        controls <- intersect(which(sex == sex[case]), controls)
+        if (length(controls) == 0) {
+          stop("Error: no suitable sex-matched controls could be identified.")
+        }
+        names(controls) <- names(CNdata)[controls]
+        controlNames <- paste(names(controls), sex[controls], sep="=")
+        message("Controls: ", paste(controlNames, collapse=", "))
+        if (tolower(substr(sex[case]), 1, 1) != "m") {
+
+          # Drop chrY bins, etc. if the case is not annotated as male.
+          for (slotName in c("gap","probes","exclude","detail","bins")) {
+            if (!is.null(slot(anno, slotName))) {
+              slot(anno, slotName) <- subset(slot(anno, slotName), 
+                                             seqnames != "chrY")
+            }
+          }
+
+        }
       }
-      message("Case: ", names(CNdata)[case], "=", sex[case])
-      controls <- intersect(which(sex == sex[case]), controls)
-      names(controls) <- names(CNdata)[controls]
-      controlNames <- paste(names(controls), sex[controls], sep="=")
-      message("Controls: ", paste(controlNames, collapse=", "))
     } else {
       message("Case: ", names(CNdata)[case])
       names(controls) <- names(CNdata)[controls]

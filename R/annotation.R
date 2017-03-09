@@ -1,20 +1,20 @@
 ##### ANNOTATION methods #####
 
 #' @import minfi
-#' @import IlluminaHumanMethylation450kmanifest
-#' @import IlluminaHumanMethylation450kanno.ilmn12.hg19
-#' @import IlluminaHumanMethylationEPICmanifest
-#' @import IlluminaHumanMethylationEPICanno.ilm10b2.hg19
 #' @import GenomicRanges
 #' @import IRanges
 #' @import GenomeInfoDb
+#' @import IlluminaHumanMethylation450kanno.ilmn12.hg19
+#' @import IlluminaHumanMethylation450kmanifest
+#' @import IlluminaHumanMethylationEPICanno.ilm10b2.hg19
+#' @import IlluminaHumanMethylationEPICmanifest
 #' @importFrom rtracklayer import
 NULL
 
 #' CNV.create_anno
 #' @description Create annotations for CNV analysis.
 #' @param bin_minprobes numeric. Minimum number of probes per bin. Bins are interatively merged with neighboring bin until minimum number is reached.
-#' @param bin_minsize numeric. Minimum size of bin. Default varies by array_type
+#' @param bin_minsize numeric. Minimum size of bin. Default is 45000 bases.
 #' @param bin_maxsize numeric. Maximum size of a bin. Merged bins that are larger are filtered out.
 #' @param array_type character. One of \code{450k}, \code{EPIC}, or \code{overlap}. Defaults to \code{450k}.
 #' @param chrXY logical. Should chromosome X and Y be included in the analysis?
@@ -28,7 +28,7 @@ NULL
 #' anno
 #' @author Volker Hovestadt \email{conumee@@hovestadt.bio}
 #' @export
-CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = NULL, bin_maxsize = 5e+06, 
+CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 45000, bin_maxsize = 5e+06, 
     array_type = "450k", chrXY = FALSE, exclude_regions = NULL, detail_regions = NULL) {
     object <- new("CNV.anno")
     object@date <- date()
@@ -49,12 +49,6 @@ CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = NULL, bin_maxsize 
     if (!is.element(array_type, c("450k", "EPIC", "overlap"))) {
       stop("array_type must be on of 450k, EPIC, or overlap")
     } else { 
-      # adjust default binsize based on which array is being used 
-      if (is.null(bin_minsize)) {
-          # to catch TERT amplifications on EPIC, use 4e+4;
-          # to catch SMARCB1 deletions on HM450, use 4.5e+4. 
-          bin_minsize <- ifelse(array_type == "EPIC", 40000, 45000)
-      }
       # need these to be explicit for plotting and sex matching
       object@args[["bin_minsize"]] <- bin_minsize
       object@args[["array_type"]] <- array_type
@@ -183,7 +177,7 @@ CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = NULL, bin_maxsize 
 #' @param hg19.gap foo
 #' @param hg19.exclude foo
 #' @return \code{GRanges} object.
-CNV.create_bins <- function(hg19.anno, bin_minsize = 50000, hg19.gap, hg19.exclude) {
+CNV.create_bins <- function(hg19.anno, bin_minsize = 45000, hg19.gap, hg19.exclude) {
     hg19.tile <- sort(tileGenome(Seqinfo(hg19.anno$chr, hg19.anno$size), 
         tilewidth = bin_minsize, cut.last.tile.in.chrom = TRUE))
     # setdiff for gaps (on every second window to avoid merging)

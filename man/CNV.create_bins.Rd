@@ -4,7 +4,7 @@
 \alias{CNV.create_bins}
 \title{CNV.create_bins}
 \usage{
-CNV.create_bins(hg19.anno, bin_minsize = 50000, hg19.gap, hg19.exclude)
+CNV.create_bins(hg19.anno, bin_minsize = 45000, hg19.gap, hg19.exclude)
 }
 \arguments{
 \item{hg19.anno}{foo}

@@ -28,7 +28,9 @@ Given a case index, control indices, CNV.data, and CNV.anno,
              along with hints about sex chromosomes, call CN for a sample.
 }
 \details{
-This method wraps most of conumee, and tries to call sex chromosomes properly using chrX/chrY information derived from the source GenomicRatioSet.
+This method wraps most of conumee, and tries to call sex
+chromosomes properly using chrX/chrY information derived from the
+source GenomicRatioSet.  For female subjects, chrY is dropped.
 }
 \author{
 Tim Triche, Jr. \email{tim.triche@gmail.com}

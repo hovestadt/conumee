@@ -1,8 +1,8 @@
 Package: conumee
 Title: Enhanced copy-number variation analysis using Illumina DNA methylation
     arrays
-Version: 1.9.6
-Author: Volker Hovestadt, Marc Zapatka
+Version: 1.9.7
+Author: Volker Hovestadt, Marc Zapatka, Tim Triche Jr.
 Maintainer: Volker Hovestadt <conumee@hovestadt.bio>
 Address: Division of Molecular Genetics, German Cancer Research Center (DKFZ),
     Heidelberg, Germany
@@ -16,14 +16,14 @@ Imports:
     rtracklayer,
     GenomicRanges,
     IRanges,
-    GenomeInfoDb
+    GenomeInfoDb,
+    IlluminaHumanMethylation450kanno.ilmn12.hg19,
+    IlluminaHumanMethylation450kmanifest,
+    IlluminaHumanMethylationEPICanno.ilm10b2.hg19,
+    IlluminaHumanMethylationEPICmanifest
 Depends:
     R (>= 3.0),
-    minfi,
-    IlluminaHumanMethylation450kmanifest,
-    IlluminaHumanMethylation450kanno.ilmn12.hg19,
-    IlluminaHumanMethylationEPICmanifest,
-    IlluminaHumanMethylationEPICanno.ilm10b2.hg19
+    minfi
 Suggests:
     BiocStyle,
     knitr,
