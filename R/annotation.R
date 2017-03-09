@@ -14,7 +14,7 @@ NULL
 #' CNV.create_anno
 #' @description Create annotations for CNV analysis.
 #' @param bin_minprobes numeric. Minimum number of probes per bin. Bins are interatively merged with neighboring bin until minimum number is reached.
-#' @param bin_minsize numeric. Minimum size of a bin.
+#' @param bin_minsize numeric. Minimum size of bin. Default varies by array_type
 #' @param bin_maxsize numeric. Maximum size of a bin. Merged bins that are larger are filtered out.
 #' @param array_type character. One of \code{450k}, \code{EPIC}, or \code{overlap}. Defaults to \code{450k}.
 #' @param chrXY logical. Should chromosome X and Y be included in the analysis?
@@ -28,22 +28,37 @@ NULL
 #' anno
 #' @author Volker Hovestadt \email{conumee@@hovestadt.bio}
 #' @export
-CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 50000, bin_maxsize = 5e+06, 
+CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = NULL, bin_maxsize = 5e+06, 
     array_type = "450k", chrXY = FALSE, exclude_regions = NULL, detail_regions = NULL) {
     object <- new("CNV.anno")
     object@date <- date()
     
     a1 <- formals()
     a2 <- as.list(match.call())[-1]
-    object@args <- as.list(sapply(unique(names(c(a1, a2))), function(an) if (is.element(an, 
-        names(a2))) 
-        a2[[an]] else a1[[an]], simplify = FALSE))
-    
+    getElt <- function(an) { 
+      if (is.element(an, names(a2))) {
+          a2[[an]] 
+      } else {
+          a1[[an]]
+      }
+    }
+    object@args <- as.list(sapply(unique(names(c(a1, a2))), getElt, simplify=F))
     if (is.null(array_type)) {
       array_type <- "450k"
     }
     if (!is.element(array_type, c("450k", "EPIC", "overlap"))) {
       stop("array_type must be on of 450k, EPIC, or overlap")
+    } else { 
+      # adjust default binsize based on which array is being used 
+      if (is.null(bin_minsize)) {
+          # to catch TERT amplifications on EPIC, use 4e+4;
+          # to catch SMARCB1 deletions on HM450, use 4.5e+4. 
+          bin_minsize <- ifelse(array_type == "EPIC", 40000, 45000)
+      }
+      # need these to be explicit for plotting and sex matching
+      object@args[["bin_minsize"]] <- bin_minsize
+      object@args[["array_type"]] <- array_type
+      object@args[["chrXY"]] <- chrXY 
     }
     
     if (chrXY) {
@@ -91,8 +106,8 @@ CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 50000, bin_maxsize
     }
     
     # CpG probes only
-    probes <- probes[substr(names(probes), 1, 2) == "cg" & is.element(as.vector(seqnames(probes)), 
-        object@genome$chr)]
+    probes <- probes[substr(names(probes), 1, 2) == "cg" & 
+                     is.element(as.vector(seqnames(probes)), object@genome$chr)]
     object@probes <- sort(GRanges(as.vector(seqnames(probes)), ranges(probes), 
         seqinfo = Seqinfo(object@genome$chr, object@genome$size)))
     message(" - ", length(object@probes), " probes used")
@@ -101,8 +116,9 @@ CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 50000, bin_maxsize
       message("importing regions to exclude from analysis")
       if (class(exclude_regions) == "GRanges") {
         object@exclude <- GRanges(as.vector(seqnames(exclude_regions)), 
-                                  ranges(exclude_regions), seqinfo = Seqinfo(object@genome$chr, 
-                                                                             object@genome$size))
+                                  ranges(exclude_regions),
+                                  seqinfo = Seqinfo(object@genome$chr,
+                                                    object@genome$size))
         values(object@exclude) <- values(exclude_regions)
         object@exclude <- sort(object@exclude)
       } else {

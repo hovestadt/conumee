@@ -286,3 +286,56 @@ setMethod("CNV.segment", signature(object = "CNV.analysis"), function(object,
     
     return(object)
 }) 
+
+
+#' CNV.process
+#' @description Given a case index, control indices, CNV.data, and CNV.anno, 
+#'              along with hints about sex chromosomes, call CN for a sample.
+#' 
+#' @param case      index of the case to process CN for.
+#' @param controls  indices of the control samples.
+#' @param CNdata    \code{CNV.data} object.
+#' @param anno      \code{CNV.anno} object.
+#'
+#' @return \code{CNV.analysis} object.
+#'
+#' @details This method wraps most of conumee, and tries to call sex chromosomes properly using chrX/chrY information derived from the source GenomicRatioSet. 
+#' @author Tim Triche, Jr. \email{tim.triche@@gmail.com}
+#' @export
+setGeneric("CNV.process", function(case, controls, CNdata, anno) {
+    standardGeneric("CNV.process")
+})
+
+#' @rdname CNV.process
+setMethod("CNV.process", 
+          signature(case="integer", 
+                    controls="integer",
+                    CNdata="CNV.data", 
+                    anno="CNV.anno"), 
+  function(case, controls, CNdata, anno) {
+    if (anno@args$chrXY != FALSE) {
+      sex <- attr(CNdata@intensity, "predictedSex")[names(CNdata)]
+      if (is.null(sex)) {
+        stop("Sex chromosome copy number requested, but no sex is annotated!")
+      } else {
+        message("Sex chromosome copy number requested; using same-sex controls")
+      }
+      message("Case: ", names(CNdata)[case], "=", sex[case])
+      controls <- intersect(which(sex == sex[case]), controls)
+      names(controls) <- names(CNdata)[controls]
+      controlNames <- paste(names(controls), sex[controls], sep="=")
+      message("Controls: ", paste(controlNames, collapse=", "))
+    } else {
+      message("Case: ", names(CNdata)[case])
+      names(controls) <- names(CNdata)[controls]
+      message("Controls: ", paste(names(controls), collapse=", "))
+    }
+    CNV.segment(
+      CNV.detail(
+        CNV.bin(
+          CNV.fit(CNdata[case], CNdata[controls], anno)
+        )
+      )
+    )
+  }
+)
