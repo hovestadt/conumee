@@ -329,7 +329,7 @@ setMethod("CNV.process",
         names(controls) <- names(CNdata)[controls]
         controlNames <- paste(names(controls), sex[controls], sep="=")
         message("Controls: ", paste(controlNames, collapse=", "))
-        if (tolower(substr(sex[case]), 1, 1) != "m") {
+        if (tolower(substr(sex[case], 1, 1)) != "m") {
 
           # Drop chrY bins, etc. if the case is not annotated as male.
           for (slotName in c("gap","probes","exclude","detail","bins")) {
