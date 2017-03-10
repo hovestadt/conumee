@@ -92,7 +92,7 @@ CNV.create_anno <- function(bin_minprobes = 15, bin_minsize = 45000, bin_maxsize
     }
     if (is.element(array_type, c("EPIC", "overlap"))) {
       message("getting EPIC annotations")
-      library("IlluminaHumanMethylationEPICanno.ilmn10b2.hg19") 
+      library("IlluminaHumanMethylationEPICanno.ilm10b2.hg19") 
       probesEPIC <- sort(minfi::getLocations(IlluminaHumanMethylationEPICanno.ilm10b2.hg19::IlluminaHumanMethylationEPICanno.ilm10b2.hg19))
     }
     if (array_type == "overlap") {
