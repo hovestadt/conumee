@@ -26,4 +26,3 @@ RGsetTCGA <- read.450k.url()
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-

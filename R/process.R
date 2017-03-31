@@ -286,3 +286,72 @@ setMethod("CNV.segment", signature(object = "CNV.analysis"), function(object,
     
     return(object)
 }) 
+
+
+#' CNV.process
+#' @description Given a case index, control indices, CNV.data, and CNV.anno, 
+#'              along with hints about sex chromosomes, call CN for a sample.
+#' 
+#' @param case      index of the case to process CN for.
+#' @param controls  indices of the control samples.
+#' @param CNdata    \code{CNV.data} object.
+#' @param anno      \code{CNV.anno} object.
+#'
+#' @return \code{CNV.analysis} object.
+#'
+#' @details This method wraps most of conumee, and tries to call sex
+#' chromosomes properly using chrX/chrY information derived from the
+#' source GenomicRatioSet.  For female subjects, chrY is dropped.
+#' @author Tim Triche, Jr. \email{tim.triche@@gmail.com}
+#' @export
+setGeneric("CNV.process", function(case, controls, CNdata, anno) {
+    standardGeneric("CNV.process")
+})
+
+#' @rdname CNV.process
+setMethod("CNV.process", 
+          signature(case="integer", 
+                    controls="integer",
+                    CNdata="CNV.data", 
+                    anno="CNV.anno"), 
+  function(case, controls, CNdata, anno) {
+    if (anno@args$chrXY != FALSE) {
+      sex <- attr(CNdata@intensity, "predictedSex")[names(CNdata)]
+      if (is.null(sex)) {
+        stop("Error: attr(CNdata@intensity,'predictedSex') is NULL (chrXY=T).")
+      } else {
+        message("Sex chromosome copy number requested. Using same-sex controls")
+        message("Case: ", names(CNdata)[case], "=", sex[case])
+        controls <- intersect(which(sex == sex[case]), controls)
+        if (length(controls) == 0) {
+          stop("Error: no suitable sex-matched controls could be identified.")
+        }
+        names(controls) <- names(CNdata)[controls]
+        controlNames <- paste(names(controls), sex[controls], sep="=")
+        message("Controls: ", paste(controlNames, collapse=", "))
+        if (tolower(substr(sex[case], 1, 1)) != "m") {
+
+          # Drop chrY bins, etc. if the case is not annotated as male.
+          for (slotName in c("gap","probes","exclude","detail","bins")) {
+            if (!is.null(slot(anno, slotName))) {
+              slot(anno, slotName) <- subset(slot(anno, slotName), 
+                                             seqnames != "chrY")
+            }
+          }
+
+        }
+      }
+    } else {
+      message("Case: ", names(CNdata)[case])
+      names(controls) <- names(CNdata)[controls]
+      message("Controls: ", paste(names(controls), collapse=", "))
+    }
+    CNV.segment(
+      CNV.detail(
+        CNV.bin(
+          CNV.fit(CNdata[case], CNdata[controls], anno)
+        )
+      )
+    )
+  }
+)

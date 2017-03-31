@@ -19,6 +19,38 @@ setGeneric("CNV.load", function(input, ...) {
 })
 
 #' @rdname CNV.load
+setMethod("CNV.load", signature(input = "GenomicRatioSet"), function(input, names = NULL) {
+    
+    if (!"CN" %in% names(assays(input))) {
+        message("Your GenomicRatioSet does not have an assay named 'CN'.")
+        stop("Cannot import intensities from an object that has none!")
+    }
+    
+    object <- new("CNV.data")
+    object@intensity <- as.data.frame(2**minfi::getCN(input))
+    input.names <- grep("Name", setdiff(colnames(minfi::pData(input)), 
+                                        c("Basename", "filenames")), 
+                        ignore.case = TRUE)
+    if (length(input.names) > 0) {
+        names(object) <- minfi::pData(input)[, grep("name", setdiff(colnames(minfi::pData(input)), c("Basename", "filenames")), ignore.case = TRUE)[1]]
+    }
+    
+    if (!is.null(names)) {
+        names(object) <- names
+    } 
+
+    if (!"predictedSex" %in% names(minfi::pData(input))) {
+        predictedSex <- minfi::getSex(input)$predictedSex
+    } else { 
+        predictedSex <- minfi::pData(input)$predictedSex
+    }
+    names(predictedSex) <- colnames(input)
+    attr(object@intensity, "predictedSex") <- predictedSex
+    object <- CNV.check(object)
+    return(object)
+})
+
+#' @rdname CNV.load
 setMethod("CNV.load", signature(input = "MethylSet"), function(input, names = NULL) {
     object <- new("CNV.data")
     

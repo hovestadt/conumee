@@ -12,4 +12,3 @@ Imported using \code{rtracklayer}. Raw data stored in \code{inst/extdata/detail_
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-

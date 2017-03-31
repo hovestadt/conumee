@@ -3,10 +3,10 @@
 \docType{class}
 \name{CNV.data-class}
 \alias{CNV.data-class}
+\alias{show,CNV.data-method}
 \alias{[,CNV.data,ANY,ANY,ANY-method}
 \alias{names,CNV.data-method}
 \alias{names<-,CNV.data-method}
-\alias{show,CNV.data-method}
 \title{CNV.data class}
 \usage{
 \S4method{show}{CNV.data}(object)
@@ -56,4 +56,3 @@ d[1:2]
 \author{
 Volker Hovestadt \email{conumee@hovestadt.bio}
 }
-
