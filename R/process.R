@@ -72,7 +72,13 @@ setMethod("CNV.fit", signature(query = "CNV.data", ref = "CNV.data", anno = "CNV
         }
         object@anno <- anno
         
-        r <- cor(query@intensity[p, ], ref@intensity[p, ])[1, ] < 0.99
+        r <- cor(query@intensity[p, ], ref@intensity[p, ])
+        # cor returns numeric if 1x1, matrix otherwise...
+        if (!is.matrix(r)){ 
+            r <- as.matrix(r)
+            colnames(r) <- colnames(ref@intensity)
+        }
+        r <- r[1, ] < 0.99
         if (any(!r)) message("query sample seems to also be in the reference set. not used for fit.")
         if (intercept) {
             ref.fit <- lm(y ~ ., data = data.frame(y = query@intensity[p, 
