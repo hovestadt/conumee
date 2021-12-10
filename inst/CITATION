@@ -1,9 +1,0 @@
-citEntry(entry="manual",
-  title  ="conumee: Enhanced copy-number variation analysis using Illumina DNA methylation
-    arrays",
-  author = "Volker Hovestadt, Marc Zapatka",
-  address = "Division of Molecular Genetics, German Cancer Research Center (DKFZ), Heidelberg, Germany",
-  note = "R package version 1.6.0",
-  url = "http://bioconductor.org/packages/conumee/",
-  textVersion = "Hovestadt V, Zapatka M (2015). \"conumee: Enhanced copy-number variation analysis using Illumina DNA methylation
-    arrays.\", R package version 1.6.0. <URL: http://bioconductor.org/packages/conumee/>.")
